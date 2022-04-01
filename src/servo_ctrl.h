@@ -14,7 +14,9 @@
 class Servo_Ctrl
 {
     public:
-    Servo_Ctrl();
+    Servo_Ctrl(ros::NodeHandle &_nh, const int &_loop_rate, const int &_s_id, const int &_period,
+                const int &_range, const int &_min_p_width, const int &_max_p_width,
+                const int &_lost_time_threshold, const bool &_gazebo_mode);
     ~Servo_Ctrl(){};
 
     private:
@@ -22,6 +24,7 @@ class Servo_Ctrl
     ros::NodeHandle &nh;
     ros::Publisher ctrl_servo;
     ros::Subscriber cmd_theta;
+    ros::Subscriber emergency_stop_sub;
 
     //configurations
     int loop_rate;
@@ -35,17 +38,19 @@ class Servo_Ctrl
 
     //variables
     float theta;
+    char msg_id;
+    
 
     //flags
     bool emergency_stop_flag;
 
     //Timers
-    std::chrono::system_clock::time_point last_sub_vel_time_;
+    std::chrono::system_clock::time_point last_sub_vel_time;
 
     //Methods
     void init_Handles();
     void init_variables();
-    void cmdvelCallback(const std_msgs::Float64 &arg);
+    void cmdsrvCallback(const std_msgs::Float64 &arg);
     void EmergencyStopFlagCallback(const std_msgs::Empty::ConstPtr &msg);
     bool isSubscribed();
     void publishMsg();

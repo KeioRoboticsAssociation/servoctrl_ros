@@ -22,9 +22,77 @@ Servo_Ctrl::Servo_Ctrl(ros::NodeHandle &_nh, const int &_loop_rate, const int &_
     {
         ROS_INFO("I Don't Prepare Gazebo Mode, sorry :-(");
     }else{
-         control_pub = nh.advertise<rogi_link_msgs::RogiLink>(
+         ctrl_servo = nh.advertise<rogi_link_msgs::RogiLink>(
             "send_serial", 1);
     }
-    cmd_theta = nh.subscribe
+    cmd_theta = nh.subscribe("/cmd_servo",1,&Servo_Ctrl::cmdsrvCallback,this);
+    emergency_stop_sub = nh.subscribe("/emergency_stop_flag", 1,
+                                &Servo_Ctrl::EmergencyStopFlagCallback, this);
+    init_Handles();
+
+    last_sub_vel_time = std::chrono::system_clock::now();
+
+    update();
 }
 
+void Servo_Ctrl::init_Handles()
+{
+    rogi_link_msgs::RogiLink init_msg;
+    // Wait Mr.Yoshida
+    // init_msg.id = hoge;
+    // init_msg.date[0] = hogehoge;
+    ctrl_servo.publish(init_msg);
+}
+
+void Servo_Ctrl::init_variables()
+{
+    theta = 0;
+    msg_id = (char)s_id;
+}
+
+void Servo_Ctrl::cmdsrvCallback(const std_msgs::Float64 &arg)
+{
+    
+}
+
+void Servo_Ctrl::EmergencyStopFlagCallback(const std_msgs::Empty::ConstPtr &msg)
+{
+    emergency_stop_flag = !emergency_stop_flag;
+}
+
+bool Servo_Ctrl::isSubscribed()
+{
+    auto current_time = std::chrono::system_clock::now();
+    const auto vel_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             current_time - last_sub_vel_time_).count();
+
+    if (vel_elapsed < lost_time_threshold_) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Servo_Ctrl::publishMsg()
+{
+    rogi_link_msgs::RogiLink control_msg;
+    //Wait Mr.Yoshida
+    //control_msg.id = hoge;
+    //*(float *)(&control_msg.data[0]) = theta;
+    ctrl_servo.publish(control_msg);
+}
+
+void Servo_Ctrl::cmd_servo()
+{
+
+}
+
+void Servo_Ctrl::reset()
+{
+
+}
+
+void Servo_Ctrl::Update()
+{
+
+}
